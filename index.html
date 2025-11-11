@@ -720,12 +720,18 @@ spec:
                     </ol>
                 </div>
                 <div class="theory-point">
-                    <p><strong>Key Concepts:</strong></p>
+                    <p><strong>What are Requests?</strong></p>
+                    <p>When you set a request, you're telling Kubernetes:</p>
+                    <p style="margin-left: 1.5rem; font-style: italic; color: #1976d2;">"Do not schedule this Pod on a node unless at least this much CPU/Memory is available."</p>
+                    
+                    <p style="margin-top: 1.5rem;"><strong>What are Limits?</strong></p>
+                    <p>Limit = Maximum CPU/Memory a Pod is allowed to use.</p>
                     <ul>
-                        <li><strong>Request:</strong> Minimum guaranteed resources. Used for scheduling decisions.</li>
-                        <li><strong>Limit:</strong> Maximum resources allowed. Container throttled/killed if exceeded.</li>
-                        <li><strong>QoS Class:</strong> Priority during eviction based on request/limit configuration.</li>
+                        <li>When runtime memory exceeds the limit → Pod gets killed (OOMKilled)</li>
+                        <li>When runtime CPU exceeds the limit → Container gets CPU throttled (slowed down)</li>
                     </ul>
+                    
+                    <p style="margin-top: 1.5rem;"><strong>QoS Class:</strong> Priority during eviction based on request/limit configuration.</p>
                 </div>
             </div>
 
@@ -1052,7 +1058,12 @@ spec:
     </div>
 
     <footer>
-        <p>Kubernetes Day 3 Training Guide | Interactive Learning Experience | © 2025</p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <img src="https://www.presidio.com/wp-content/themes/presidio/images/presidio-logo.svg" alt="Presidio" style="height: 24px;">
+            <span style="color: #00A3E0; font-weight: 600;">|</span>
+            <span>Kubernetes Day 3 Training Guide</span>
+        </div>
+        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Interactive Learning Experience | © 2025</p>
         <p style="margin-top:0.5rem; font-size:0.9rem;">Built for comprehensive understanding with theory, examples by Balakrishna Cherukuri</p>
     </footer>
 
