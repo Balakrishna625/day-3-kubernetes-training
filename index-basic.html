@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Day 3 Training - Interactive Guide</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1>☸️ Kubernetes Day 3 Training</h1>
+            <div class="nav-links">
+                <a href="#commands">Commands & Args</a>
+                <a href="#configmaps">ConfigMaps</a>
+                <a href="#secrets">Secrets</a>
+                <a href="#serviceaccount">Service Accounts</a>
+                <a href="#resources">Resources</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Introduction -->
+        <section class="intro-section">
+            <h2>Welcome to Kubernetes Day 3! 🚀</h2>
+            <p>This interactive guide will help you master advanced Pod configuration, security, and resource management with real-world examples and comprehensive theory.</p>
+            <div class="topics-grid">
+                <div class="topic-card">
+                    <div class="topic-icon">📝</div>
+                    <h3>Commands & Arguments</h3>
+                    <p>Override container behavior</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">⚙️</div>
+                    <h3>ConfigMaps</h3>
+                    <p>Manage configuration data</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">🔐</div>
+                    <h3>Secrets</h3>
+                    <p>Handle sensitive information</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">👤</div>
+                    <h3>Service Accounts</h3>
+                    <p>Pod identity & authentication</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">📊</div>
+                    <h3>Resource Management</h3>
+                    <p>CPU & Memory control</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commands and Arguments -->
+        <section id="commands" class="content-section">
+            <h2>📝 Commands and Arguments in Pods</h2>
+            
+            <div class="theory-box">
+                <h4>📚 Theory: Understanding Container Execution</h4>
+                <div class="theory-point">
+                    <p><strong>In Docker:</strong> Every container image has a default execution path defined in its Dockerfile using <code>ENTRYPOINT</code> and <code>CMD</code>.</p>
+                    <ul>
+                        <li><code>ENTRYPOINT</code>: The main executable (e.g., <code>/usr/bin/python</code>, <code>/bin/sh</code>)</li>
+                        <li><code>CMD</code>: Default arguments passed to the ENTRYPOINT (e.g., <code>app.py</code>, <code>--port 8080</code>)</li>
+                    </ul>
+                </div>
+                <div class="theory-point">
+                    <p><strong>In Kubernetes:</strong> You can override these Docker defaults to customize container behavior without rebuilding images.</p>
+                    <ul>
+                        <li><code>command</code> field: Overrides Dockerfile's ENTRYPOINT</li>
+                        <li><code>args</code> field: Overrides Dockerfile's CMD</li>
+                    </ul>
+                    <p><strong>Why is this powerful?</strong> You can use the same container image across different environments (dev/staging/prod) with different runtime configurations!</p>
+                </div>
+            </div>
+            
+            <div class="concept-box">
+                <h3>Docker vs Kubernetes Mapping</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <h4>Docker</h4>
+                        <ul>
+                            <li><code>ENTRYPOINT</code> → Command to run</li>
+                            <li><code>CMD</code> → Default arguments</li>
+                        </ul>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="comparison-item">
+                        <h4>Kubernetes</h4>
+                        <ul>
+                            <li><code>command</code> → Overrides ENTRYPOINT</li>
+                            <li><code>args</code> → Overrides CMD</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="real-world-example">
+                <h4>🌍 Real-World Example: E-commerce Application</h4>
+                <div class="scenario-title">Scenario: Running a Python Flask API with different configurations</div>
+                <div class="scenario-description">
+                    <p>Your team has built a product catalog API using Flask. The same Docker image needs to:</p>
+                    <ul>
+                        <li><strong>Development:</strong> Run with debug mode and auto-reload</li>
+                        <li><strong>Staging:</strong> Run on port 5000 with logging level INFO</li>
+                        <li><strong>Production:</strong> Run on port 8080 with multiple workers and strict error handling</li>
+                    </ul>
+                    <p><strong>Solution:</strong> Use the same image but different commands and arguments per environment!</p>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Command & Args Examples</h3>
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="showExample('default')">Default Container</button>
+                    <button class="demo-btn" onclick="showExample('command')">Override Command</button>
+                    <button class="demo-btn" onclick="showExample('args')">Override Args</button>
+                    <button class="demo-btn" onclick="showExample('both')">Both Override</button>
+                    <button class="demo-btn" onclick="showExample('production')">Production Example</button>
+                </div>
+                <div id="command-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="command-yaml"></code></pre>
+                    </div>
+                    <div class="execution-flow">
+                        <h4>Execution Flow:</h4>
+                        <div id="execution-visual" class="flow-visual"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 Key Decision Points</h4>
+                <p><strong>Use <code>command</code> when:</strong></p>
+                <ul>
+                    <li>You need to run a completely different executable (e.g., debugging with shell instead of app)</li>
+                    <li>The image's ENTRYPOINT is incorrect or not suitable for your use case</li>
+                    <li>Example: Running migration scripts before the main app</li>
+                </ul>
+                <p><strong>Use <code>args</code> when:</strong></p>
+                <ul>
+                    <li>The main executable is correct, but you need different parameters</li>
+                    <li>Passing environment-specific flags (--debug, --port, --workers)</li>
+                    <li>Example: Same web server, different port numbers</li>
+                </ul>
+            </div>
+
+            <div class="danger-box">
+                <h4>⚠️ Common Pitfalls</h4>
+                <ul>
+                    <li><strong>Shell form vs Exec form:</strong> Always use array form <code>["cmd", "arg1"]</code> not string form <code>"cmd arg1"</code></li>
+                    <li><strong>Environment variables:</strong> Won't expand automatically - use shell wrapper: <code>["/bin/sh", "-c", "echo $MY_VAR"]</code></li>
+                    <li><strong>Signal handling:</strong> If you override with a shell, signals (like SIGTERM) might not reach your app properly</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ConfigMaps -->
+        <section id="configmaps" class="content-section">
+            <h2>⚙️ ConfigMaps</h2>
+            
+            <div class="theory-box">
+                <h4>📚 Theory: Configuration Management in Kubernetes</h4>
+                <div class="theory-point">
+                    <p><strong>The Problem:</strong> Hardcoding configuration in container images makes them inflexible. If you need to change a database URL, you'd have to rebuild and redeploy the entire image!</p>
+                </div>
+                <div class="theory-point">
+                    <p><strong>The Solution:</strong> ConfigMaps separate configuration data from application code, following the <strong>12-Factor App methodology</strong>.</p>
+                    <p><strong>Benefits:</strong></p>
+                    <ul>
+                        <li>Same image works across all environments (dev/staging/prod)</li>
+                        <li>Update configuration without redeploying containers</li>
+                        <li>Centralized configuration management</li>
+                        <li>Version control your configs separately from code</li>
+                    </ul>
+                </div>
+                <div class="theory-point">
+                    <p><strong>How ConfigMaps Work:</strong></p>
+                    <p>ConfigMaps store key-value pairs in etcd (Kubernetes database). Pods can consume this data as:</p>
+                    <ul>
+                        <li><strong>Environment Variables:</strong> Simple config values</li>
+                        <li><strong>Command-line Arguments:</strong> Via variable substitution</li>
+                        <li><strong>Files in a Volume:</strong> For complex configs (JSON, XML, .properties files)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="real-world-example">
+                <h4>🌍 Real-World Example: Multi-tenant SaaS Platform</h4>
+                <div class="scenario-title">Scenario: Configuration for different customer deployments</div>
+                <div class="scenario-description">
+                    <p>You're running a SaaS application where each customer gets their own namespace. Each deployment needs:</p>
+                    <ul>
+                        <li>Customer-specific branding (logo URLs, color schemes)</li>
+                        <li>Feature flags (which features are enabled for this customer tier)</li>
+                        <li>Integration endpoints (their payment gateway, email service)</li>
+                        <li>Performance tuning (cache sizes, connection pools)</li>
+                    </ul>
+                    <p><strong>Solution:</strong> One ConfigMap per customer namespace with all their specific settings!</p>
+                </div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Create and Use ConfigMaps</h3>
+                <div class="demo-tabs">
+                    <button class="tab-btn active" onclick="showConfigMapTab('literal')">From Literal</button>
+                    <button class="tab-btn" onclick="showConfigMapTab('file')">From File</button>
+                    <button class="tab-btn" onclick="showConfigMapTab('env')">As Environment</button>
+                    <button class="tab-btn" onclick="showConfigMapTab('volume')">As Volume</button>
+                    <button class="tab-btn" onclick="showConfigMapTab('realworld')">Real-World</button>
+                </div>
+                <div id="configmap-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="configmap-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-by-step">
+                <h3>Step-by-Step: ConfigMap Lifecycle</h3>
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Create ConfigMap</h4>
+                        <p>From literals, files, or YAML manifests. ConfigMap is stored in etcd.</p>
+                        <code>kubectl create configmap app-config --from-literal=DB_HOST=postgres.svc</code>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Reference in Pod</h4>
+                        <p>Pod spec references the ConfigMap name. Kubernetes validates it exists.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Mount or Inject</h4>
+                        <p>At container startup, values are either set as env vars or mounted as files.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Application Uses Config</h4>
+                        <p>Your app reads env vars or config files - no knowledge of Kubernetes needed!</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Update ConfigMap (Optional)</h4>
+                        <p>Mounted volumes update automatically (with delay). Env vars require pod restart.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 Best Practices for ConfigMaps</h4>
+                <ul>
+                    <li><strong>Name with purpose:</strong> <code>postgres-config</code>, not <code>config-v1</code></li>
+                    <li><strong>One ConfigMap per logical component:</strong> Database config separate from cache config</li>
+                    <li><strong>Use volumes for large/complex configs:</strong> Properties files, JSON configs</li>
+                    <li><strong>Use env vars for simple values:</strong> Single strings, numbers, URLs</li>
+                    <li><strong>Version your ConfigMaps:</strong> <code>app-config-v2</code> for immutable deployments</li>
+                </ul>
+            </div>
+
+            <div class="danger-box">
+                <h4>⚠️ ConfigMap Limitations & Gotchas</h4>
+                <ul>
+                    <li><strong>Size limit:</strong> 1MB maximum - don't store large files!</li>
+                    <li><strong>Not secrets:</strong> Data is stored in plain text - visible to anyone with access</li>
+                    <li><strong>Namespace scoped:</strong> Can't share across namespaces (use replication)</li>
+                    <li><strong>Update delay:</strong> Volume-mounted updates take up to 1 minute to propagate</li>
+                    <li><strong>No hot reload:</strong> Most apps won't reload config automatically</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Secrets -->
+        <section id="secrets" class="content-section">
+            <h2>🔐 Kubernetes Secrets</h2>
+            
+            <div class="theory-box">
+                <h4>📚 Theory: Secrets Management in Kubernetes</h4>
+                <div class="theory-point">
+                    <p><strong>What are Secrets?</strong> Secrets are Kubernetes objects designed to hold sensitive information like passwords, OAuth tokens, SSH keys, and TLS certificates.</p>
+                </div>
+                <div class="theory-point">
+                    <p><strong>How are Secrets different from ConfigMaps?</strong></p>
+                    <table style="width:100%; border-collapse: collapse; margin: 1rem 0;">
+                        <tr style="background:#f5f5f5;">
+                            <th style="padding:0.75rem; border:1px solid #ddd; text-align:left;">Aspect</th>
+                            <th style="padding:0.75rem; border:1px solid #ddd; text-align:left;">ConfigMap</th>
+                            <th style="padding:0.75rem; border:1px solid #ddd; text-align:left;">Secret</th>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; border:1px solid #ddd;"><strong>Purpose</strong></td>
+                            <td style="padding:0.75rem; border:1px solid #ddd;">Non-sensitive config</td>
+                            <td style="padding:0.75rem; border:1px solid #ddd;">Sensitive data</td>
+                        </tr>
+                        <tr style="background:#f9f9f9;">
+                            <td style="padding:0.75rem; border:1px solid #ddd;"><strong>Storage</strong></td>
+                            <td style="padding:0.75rem; border:1px solid #ddd;">Plain text in etcd</td>
+                            <td style="padding:0.75rem; border:1px solid #ddd;">Base64 encoded (optionally encrypted)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; border:1px solid #ddd;"><strong>Access Control</strong></td>
+                            <td style="padding:0.75rem; border:1px solid #ddd;">Basic RBAC</td>
+                            <td style="padding:0.75rem; border:1px solid #ddd;">Strict RBAC + audit logging</td>
+                        </tr>
+                        <tr style="background:#f9f9f9;">
+                            <td style="padding:0.75rem; border:1px solid #ddd;"><strong>Example Use</strong></td>
+                            <td style="padding:0.75rem; border:1px solid #ddd;">API URLs, feature flags</td>
+                            <td style="padding:0.75rem; border:1px solid #ddd;">DB passwords, API keys</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="theory-point">
+                    <p><strong>Important Truth: Base64 is NOT Encryption!</strong></p>
+                    <p>By default, Secrets are only base64 encoded, which is <strong>easily reversible</strong>. Anyone with cluster access can decode them. True security comes from:</p>
+                    <ul>
+                        <li>Enabling encryption at rest in etcd</li>
+                        <li>RBAC policies limiting who can read Secrets</li>
+                        <li>Audit logging to track access</li>
+                        <li>External secret management (HashiCorp Vault, AWS Secrets Manager)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="real-world-example">
+                <h4>🌍 Real-World Example: Banking Application Security</h4>
+                <div class="scenario-title">Scenario: Securing database credentials and API keys</div>
+                <div class="scenario-description">
+                    <p>A banking application needs to:</p>
+                    <ul>
+                        <li>Connect to PostgreSQL database (username, password)</li>
+                        <li>Call payment gateway API (API key, merchant ID)</li>
+                        <li>Serve HTTPS traffic (TLS certificate and private key)</li>
+                        <li>Pull images from private Docker registry (registry credentials)</li>
+                    </ul>
+                    <p><strong>Security Requirements:</strong></p>
+                    <ul>
+                        <li>Developers can deploy apps but NOT view production secrets</li>
+                        <li>Secrets must be rotated monthly</li>
+                        <li>All secret access must be audited</li>
+                        <li>Secrets stored in etcd must be encrypted</li>
+                    </ul>
+                    <p><strong>Solution:</strong> Different Secret types for different purposes with RBAC policies!</p>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Base64 Encoding/Decoding</h3>
+                <div class="encoder-tool">
+                    <div class="encoder-input">
+                        <label>Plain Text Secret:</label>
+                        <input type="text" id="plain-text" placeholder="Enter your secret (e.g., MyP@ssw0rd!)" oninput="encodeSecret()">
+                    </div>
+                    <div class="encoder-arrow">↓ Base64 Encode ↓</div>
+                    <div class="encoder-output">
+                        <label>Base64 Encoded:</label>
+                        <input type="text" id="encoded-text" readonly>
+                    </div>
+                    <div class="encoder-arrow">↓ Base64 Decode ↓</div>
+                    <div class="encoder-output">
+                        <label>Decoded Back (proves it's NOT encryption!):</label>
+                        <input type="text" id="decoded-text" readonly>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    ⚠️ <strong>Critical Understanding:</strong> Base64 is just encoding, not encryption! Run <code>echo "TXlQQHNzdzByZCE=" | base64 -d</code> and you'll get the original password. This is why RBAC and encryption at rest are essential!
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Secret Types and Use Cases</h3>
+                <div class="demo-tabs">
+                    <button class="tab-btn active" onclick="showSecretType('opaque')">Opaque (Generic)</button>
+                    <button class="tab-btn" onclick="showSecretType('docker')">Docker Registry</button>
+                    <button class="tab-btn" onclick="showSecretType('tls')">TLS Certificate</button>
+                    <button class="tab-btn" onclick="showSecretType('token')">Service Account</button>
+                    <button class="tab-btn" onclick="showSecretType('comparison')">When to Use</button>
+                </div>
+                <div id="secret-type-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="secret-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-comparison">
+                <div class="code-block">
+                    <div class="code-header">❌ Insecure Approach (Never Do This!)</div>
+                    <div class="code-content">
+                        <div class="yaml-display">
+                            <pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: insecure-pod
+spec:
+  containers:
+  - name: app
+    image: myapp:1.0
+    env:
+    - name: DB_PASSWORD
+      value: "hardcoded-password-123"
+      # Problems:
+      # 1. Visible in Git
+      # 2. Visible in kubectl describe
+      # 3. No rotation capability
+      # 4. Same password everywhere</code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">✅ Secure Approach (Use Secrets)</div>
+                    <div class="code-content">
+                        <div class="yaml-display">
+                            <pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: secure-pod
+spec:
+  containers:
+  - name: app
+    image: myapp:1.0
+    env:
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: db-credentials
+          key: password
+    # Benefits:
+    # 1. Not in Git
+    # 2. Masked in kubectl describe
+    # 3. Can rotate independently
+    # 4. RBAC controlled access</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 Advantages of Kubernetes Secrets</h4>
+                <ul>
+                    <li><strong>RBAC Integration:</strong> Fine-grained access control - only authorized pods/users can read</li>
+                    <li><strong>Audit Trail:</strong> All secret access can be logged and monitored</li>
+                    <li><strong>Dynamic Updates:</strong> Rotate secrets without rebuilding images</li>
+                    <li><strong>Namespace Isolation:</strong> Secrets don't leak across namespace boundaries</li>
+                    <li><strong>Kubernetes-Native:</strong> Works seamlessly with other K8s features (ServiceAccounts, Ingress)</li>
+                    <li><strong>Optional Encryption:</strong> Can enable encryption at rest with KMS providers</li>
+                </ul>
+            </div>
+
+            <div class="danger-box">
+                <h4>⚠️ Limitations of Kubernetes Secrets (Important!)</h4>
+                <ul>
+                    <li><strong>Not encrypted by default:</strong> Only base64 encoded in etcd - must enable encryption explicitly</li>
+                    <li><strong>Cluster-wide trust:</strong> Anyone with cluster admin can see all secrets</li>
+                    <li><strong>No built-in rotation:</strong> You must implement rotation policies yourself</li>
+                    <li><strong>Limited to 1MB:</strong> Can't store large certificates or files</li>
+                    <li><strong>Visible in memory:</strong> Secrets are mounted as tmpfs - visible in container memory</li>
+                    <li><strong>Consider external solutions for production:</strong> HashiCorp Vault, AWS Secrets Manager, Azure Key Vault for enterprise security</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h3>Decision Tree: Secret vs ConfigMap vs External Secret Manager</h3>
+                <div class="step-item">
+                    <div class="step-number">?</div>
+                    <div class="step-content">
+                        <h4>Is the data sensitive? (passwords, keys, tokens)</h4>
+                        <p><strong>NO:</strong> Use ConfigMap ✅<br>
+                        <strong>YES:</strong> Continue to next question ⬇️</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">?</div>
+                    <div class="step-content">
+                        <h4>Do you have compliance requirements? (PCI-DSS, HIPAA, SOC2)</h4>
+                        <p><strong>YES:</strong> Use external secret manager (Vault, AWS Secrets Manager) ✅<br>
+                        <strong>NO:</strong> Continue to next question ⬇️</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">?</div>
+                    <div class="step-content">
+                        <h4>Is this for development/testing environments?</h4>
+                        <p><strong>YES:</strong> Kubernetes Secrets are fine ✅<br>
+                        <strong>NO (Production):</strong> Consider external secret manager or at minimum enable K8s encryption at rest ✅</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Service Account -->
+        <section id="serviceaccount" class="content-section">
+            <h2>👤 Service Accounts and Tokens</h2>
+            
+            <div class="theory-box">
+                <h4>📚 Theory: Pod Identity and Authentication</h4>
+                <div class="theory-point">
+                    <p><strong>The Problem:</strong> Pods often need to interact with the Kubernetes API (list other pods, read ConfigMaps, create resources). How does the API server know which pod is making the request and what it's allowed to do?</p>
+                </div>
+                <div class="theory-point">
+                    <p><strong>The Solution: Service Accounts</strong></p>
+                    <p>Service Accounts provide an identity for processes running in pods. Think of them as "user accounts for pods."</p>
+                    <ul>
+                        <li><strong>Every namespace has a "default" ServiceAccount</strong> automatically created</li>
+                        <li><strong>Every pod uses a ServiceAccount</strong> (if not specified, uses "default")</li>
+                        <li><strong>ServiceAccount gets a token</strong> that proves its identity</li>
+                        <li><strong>Token is automatically mounted</strong> in the pod at a well-known path</li>
+                    </ul>
+                </div>
+                <div class="theory-point">
+                    <p><strong>Authentication Flow:</strong></p>
+                    <ol style="line-height: 2;">
+                        <li>Pod starts with ServiceAccount specified in spec</li>
+                        <li>Kubernetes creates/retrieves authentication token for that ServiceAccount</li>
+                        <li>Token is mounted as file in pod: <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code></li>
+                        <li>Application reads token and includes it in API requests (Bearer token)</li>
+                        <li>API server validates token and checks RBAC permissions</li>
+                        <li>Request is allowed or denied based on Role/RoleBinding</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="real-world-example">
+                <h4>🌍 Real-World Example: CI/CD Pipeline in Kubernetes</h4>
+                <div class="scenario-title">Scenario: Jenkins running inside Kubernetes deploying applications</div>
+                <div class="scenario-description">
+                    <p>Your company runs Jenkins in a Kubernetes cluster to build and deploy applications. Jenkins needs to:</p>
+                    <ul>
+                        <li>Create/update Deployments and Services</li>
+                        <li>Read application logs for troubleshooting</li>
+                        <li>Scale deployments based on load</li>
+                        <li>Create namespaces for new projects</li>
+                    </ul>
+                    <p><strong>Security Requirements:</strong></p>
+                    <ul>
+                        <li>Jenkins should NOT have cluster-admin access (principle of least privilege)</li>
+                        <li>Jenkins in "development" namespace can't affect "production" namespace</li>
+                        <li>Audit log should show exactly what Jenkins did</li>
+                        <li>Tokens should expire and rotate automatically</li>
+                    </ul>
+                    <p><strong>Solution:</strong> Create a dedicated ServiceAccount for Jenkins with specific RBAC permissions and bound tokens!</p>
+                </div>
+            </div>
+
+            <div class="concept-box">
+                <h3>Legacy Tokens vs Bound Tokens (Critical Evolution!)</h3>
+                <div class="token-comparison">
+                    <div class="token-type legacy-token">
+                        <h4>🔴 Legacy Tokens (Pre Kubernetes 1.21)</h4>
+                        <div class="token-properties">
+                            <div class="property">❌ No expiration - valid forever</div>
+                            <div class="property">❌ Stored as Secret objects</div>
+                            <div class="property">❌ Not audience bound - works anywhere</div>
+                            <div class="property">❌ Not pod bound - valid even after pod deletion</div>
+                            <div class="property">❌ Major security risk if leaked</div>
+                            <div class="property">❌ Can be copied and used elsewhere</div>
+                        </div>
+                        <p style="margin-top:1rem; font-weight:600; color:#c62828;">Why bad? If an attacker steals this token, they can use it forever until manually revoked!</p>
+                    </div>
+                    <div class="token-type bound-token">
+                        <h4>✅ Bound Tokens (Kubernetes 1.21+)</h4>
+                        <div class="token-properties">
+                            <div class="property">✅ Time-limited - default 1 hour TTL</div>
+                            <div class="property">✅ Auto-rotated before expiration</div>
+                            <div class="property">✅ Audience bound - only for specific API</div>
+                            <div class="property">✅ Pod bound - invalid after pod deletion</div>
+                            <div class="property">✅ Reduced attack surface</div>
+                            <div class="property">✅ Follows security best practices</div>
+                        </div>
+                        <p style="margin-top:1rem; font-weight:600; color:#2e7d32;">Why better? Even if stolen, token expires quickly and only works for that specific pod!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Service Account Examples</h3>
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="showSAExample('create')">Create SA</button>
+                    <button class="demo-btn" onclick="showSAExample('pod')">Use in Pod</button>
+                    <button class="demo-btn" onclick="showSAExample('token')">Projected Token</button>
+                    <button class="demo-btn" onclick="showSAExample('rbac')">With RBAC</button>
+                    <button class="demo-btn" onclick="showSAExample('fullexample')">Full Example</button>
+                </div>
+                <div id="sa-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="sa-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="animation-box">
+                <h3>Token Lifecycle Animation</h3>
+                <div id="token-lifecycle" class="lifecycle-animation">
+                    <button class="animate-btn" onclick="animateTokenLifecycle()">▶️ Play Token Lifecycle</button>
+                    <div class="timeline">
+                        <div class="timeline-item" id="tl-1">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <strong>Pod Created</strong><br>
+                                ServiceAccount specified in pod spec. Kubelet requests token projection.
+                            </div>
+                        </div>
+                        <div class="timeline-item" id="tl-2">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <strong>Token Projected</strong><br>
+                                Token generated with 1-hour TTL, bound to pod, audience, and time limit.
+                            </div>
+                        </div>
+                        <div class="timeline-item" id="tl-3">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <strong>Application Uses Token</strong><br>
+                                App reads token from <code>/var/run/secrets/.../token</code> and makes API calls.
+                            </div>
+                        </div>
+                        <div class="timeline-item" id="tl-4">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <strong>Auto-Rotation (45 minutes)</strong><br>
+                                Before expiration, kubelet automatically refreshes token. App sees updated file.
+                            </div>
+                        </div>
+                        <div class="timeline-item" id="tl-5">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <strong>Pod Deleted → Token Invalid</strong><br>
+                                When pod terminates, token immediately becomes invalid. Cannot be reused!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 Best Practices for Service Accounts</h4>
+                <ul>
+                    <li><strong>Create dedicated ServiceAccounts:</strong> Don't use "default" for applications with API access</li>
+                    <li><strong>Use descriptive names:</strong> <code>jenkins-deployer</code>, <code>monitoring-reader</code></li>
+                    <li><strong>Apply least privilege:</strong> Only grant minimum required permissions via RBAC</li>
+                    <li><strong>Use projected volumes:</strong> Always use bound tokens with audience and TTL</li>
+                    <li><strong>Disable auto-mounting if not needed:</strong> <code>automountServiceAccountToken: false</code></li>
+                    <li><strong>Separate SAs per application:</strong> Each app gets its own identity for better auditing</li>
+                </ul>
+            </div>
+
+            <div class="step-by-step">
+                <h3>Complete Example: Securing an Application</h3>
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Create ServiceAccount</h4>
+                        <code>kubectl create serviceaccount log-reader -n production</code>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Create Role (what can be done)</h4>
+                        <p>Define permissions: can read pods and logs in production namespace only.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Create RoleBinding (who can do it)</h4>
+                        <p>Bind the Role to the ServiceAccount.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Deploy Pod with ServiceAccount</h4>
+                        <p>Pod gets projected token with 1-hour TTL, auto-rotated.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Verify and Monitor</h4>
+                        <p>Check audit logs, test permissions, ensure principle of least privilege.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources -->
+        <section id="resources" class="content-section">
+            <h2>📊 Resource Management</h2>
+            
+            <div class="theory-box">
+                <h4>📚 Theory: Why Resource Management Matters</h4>
+                <div class="theory-point">
+                    <p><strong>The Problem:</strong> Kubernetes is a shared platform. Multiple applications run on the same nodes. Without resource management:</p>
+                    <ul>
+                        <li>One application can starve others (noisy neighbor problem)</li>
+                        <li>Critical apps crash due to lack of resources</li>
+                        <li>Cluster becomes unpredictable and unreliable</li>
+                        <li>Cost management becomes impossible</li>
+                    </ul>
+                </div>
+                <div class="theory-point">
+                    <p><strong>The Solution: Three-Layer Resource Management</strong></p>
+                    <ol style="line-height: 2;">
+                        <li><strong>Container Level:</strong> Resource requests and limits per container</li>
+                        <li><strong>Namespace Level:</strong> ResourceQuotas limit total usage in namespace</li>
+                        <li><strong>Default Enforcement:</strong> LimitRanges set defaults and constraints</li>
+                    </ol>
+                </div>
+                <div class="theory-point">
+                    <p><strong>Key Concepts:</strong></p>
+                    <ul>
+                        <li><strong>Request:</strong> Minimum guaranteed resources. Used for scheduling decisions.</li>
+                        <li><strong>Limit:</strong> Maximum resources allowed. Container throttled/killed if exceeded.</li>
+                        <li><strong>QoS Class:</strong> Priority during eviction based on request/limit configuration.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="real-world-example">
+                <h4>🌍 Real-World Example: E-commerce Platform Black Friday</h4>
+                <div class="scenario-title">Scenario: Multi-tenant cluster during peak traffic</div>
+                <div class="scenario-description">
+                    <p>Your e-commerce platform runs multiple services in a shared cluster:</p>
+                    <ul>
+                        <li><strong>Payment Service:</strong> Critical - must always work</li>
+                        <li><strong>Product Catalog API:</strong> Important - high traffic expected</li>
+                        <li><strong>Analytics Service:</strong> Can tolerate delays</li>
+                        <li><strong>Batch Jobs:</strong> Can be postponed if resources tight</li>
+                    </ul>
+                    <p><strong>Black Friday Challenge:</strong></p>
+                    <ul>
+                        <li>10x normal traffic expected</li>
+                        <li>Limited cluster capacity (nodes are expensive!)</li>
+                        <li>Payment service MUST NOT fail (money involved!)</li>
+                        <li>Analytics can wait, batch jobs can be delayed</li>
+                    </ul>
+                    <p><strong>Solution Strategy:</strong></p>
+                    <ul>
+                        <li><strong>Payment:</strong> Guaranteed QoS (request = limit) - highest priority</li>
+                        <li><strong>Catalog API:</strong> Burstable QoS (can scale up when traffic spikes)</li>
+                        <li><strong>Analytics:</strong> Burstable with low requests</li>
+                        <li><strong>Batch Jobs:</strong> BestEffort - uses leftover resources</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="concept-box">
+                <h3>Understanding Requests vs Limits</h3>
+                <div class="resource-bar-container">
+                    <h4>CPU & Memory Allocation</h4>
+                    <div class="resource-bar">
+                        <div class="bar-section request" style="width: 30%;">
+                            <span>Request<br>Guaranteed<br>(Scheduling)</span>
+                        </div>
+                        <div class="bar-section burstable" style="width: 30%;">
+                            <span>Burstable<br>Zone<br>(If available)</span>
+                        </div>
+                        <div class="bar-section limit" style="width: 10%;">
+                            <span>Limit<br>(Max)</span>
+                        </div>
+                        <div class="bar-section unavailable" style="width: 30%;">
+                            <span>Throttled/OOMKilled<br>(Beyond limit)</span>
+                        </div>
+                    </div>
+                    <p style="margin-top:1rem;"><strong>Key Insight:</strong> Request affects where your pod is scheduled. Limit affects what happens when it runs.</p>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Resource Calculator</h3>
+                <div class="resource-calculator">
+                    <div class="calculator-inputs">
+                        <div class="input-group">
+                            <label>CPU Request (millicores):</label>
+                            <input type="range" id="cpu-request" min="0" max="4000" value="500" oninput="updateResourceVisual()">
+                            <span id="cpu-request-val">500m</span>
+                        </div>
+                        <div class="input-group">
+                            <label>CPU Limit (millicores):</label>
+                            <input type="range" id="cpu-limit" min="0" max="4000" value="1000" oninput="updateResourceVisual()">
+                            <span id="cpu-limit-val">1000m</span>
+                        </div>
+                        <div class="input-group">
+                            <label>Memory Request (Mi):</label>
+                            <input type="range" id="mem-request" min="0" max="2048" value="256" oninput="updateResourceVisual()">
+                            <span id="mem-request-val">256Mi</span>
+                        </div>
+                        <div class="input-group">
+                            <label>Memory Limit (Mi):</label>
+                            <input type="range" id="mem-limit" min="0" max="2048" value="512" oninput="updateResourceVisual()">
+                            <span id="mem-limit-val">512Mi</span>
+                        </div>
+                    </div>
+                    <div class="qos-indicator">
+                        <h4>QoS Class: <span id="qos-class">Burstable</span></h4>
+                        <p id="qos-explanation"></p>
+                    </div>
+                    <div class="yaml-display">
+                        <pre><code id="resource-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theory-box">
+                <h4>📚 Deep Dive: QoS Classes</h4>
+                <div class="theory-point">
+                    <p><strong>QoS (Quality of Service) determines eviction priority</strong> when nodes run out of resources.</p>
+                    <p>When a node is under memory pressure, Kubernetes evicts pods in this order:</p>
+                    <ol style="line-height: 2;">
+                        <li><strong>BestEffort pods</strong> evicted first (using more than 0, but no requests)</li>
+                        <li><strong>Burstable pods</strong> evicted next (using more than request)</li>
+                        <li><strong>Guaranteed pods</strong> evicted last (only if using more than request)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="concept-box">
+                <h3>QoS Classes Explained</h3>
+                <div class="qos-grid">
+                    <div class="qos-item guaranteed">
+                        <h4>Guaranteed</h4>
+                        <p><strong>When:</strong> Request = Limit for ALL resources</p>
+                        <ul>
+                            <li>Highest priority - last to be evicted</li>
+                            <li>Gets exactly what it requests</li>
+                            <li>Predictable performance</li>
+                            <li>Use for: Critical production services</li>
+                        </ul>
+                        <p style="margin-top:1rem; font-weight:600;">Example: Payment processing, databases</p>
+                    </div>
+                    <div class="qos-item burstable">
+                        <h4>Burstable</h4>
+                        <p><strong>When:</strong> Request < Limit (or only one set)</p>
+                        <ul>
+                            <li>Medium priority</li>
+                            <li>Can burst above request if available</li>
+                            <li>May be throttled (CPU) or killed (Memory)</li>
+                            <li>Use for: Most applications</li>
+                        </ul>
+                        <p style="margin-top:1rem; font-weight:600;">Example: Web APIs, microservices</p>
+                    </div>
+                    <div class="qos-item besteffort">
+                        <h4>BestEffort</h4>
+                        <p><strong>When:</strong> No request or limit set</p>
+                        <ul>
+                            <li>Lowest priority - first to be evicted</li>
+                            <li>Uses whatever resources are left</li>
+                            <li>No guarantees at all</li>
+                            <li>Use for: Non-critical batch jobs</li>
+                        </ul>
+                        <p style="margin-top:1rem; font-weight:600;">Example: Log cleanup, data backups</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Resource Quotas and Limit Ranges</h3>
+                <div class="demo-tabs">
+                    <button class="tab-btn active" onclick="showResourceTab('quota')">Resource Quota</button>
+                    <button class="tab-btn" onclick="showResourceTab('limitrange')">Limit Range</button>
+                    <button class="tab-btn" onclick="showResourceTab('comparison')">When to Use</button>
+                    <button class="tab-btn" onclick="showResourceTab('realworld')">Real Example</button>
+                </div>
+                <div id="resource-tab-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="resource-tab-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-by-step">
+                <h3>Three-Tier Resource Management Strategy</h3>
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Namespace Level: Set ResourceQuota</h4>
+                        <p>Limit the total resources a team/namespace can consume. Prevents one team from hogging the cluster.</p>
+                        <p><strong>Example:</strong> "Dev namespace can use max 20 CPU cores and 40GB RAM total"</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Namespace Level: Set LimitRange</h4>
+                        <p>Define default requests/limits and min/max per container. Prevents developers from forgetting to set resources.</p>
+                        <p><strong>Example:</strong> "Every container must request at least 100m CPU, default is 500m"</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Pod Level: Set Specific Resources</h4>
+                        <p>For critical workloads, override defaults with specific values based on load testing.</p>
+                        <p><strong>Example:</strong> "Payment service needs exactly 2 CPU and 4GB RAM (Guaranteed)"</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 Best Practices for Resource Management</h4>
+                <ul>
+                    <li><strong>Always set requests for production:</strong> Enables proper scheduling and prevents overcommitment</li>
+                    <li><strong>Set limits for memory:</strong> Prevents OOMKilled affecting other pods</li>
+                    <li><strong>Be careful with CPU limits:</strong> Can cause unnecessary throttling - consider omitting for some workloads</li>
+                    <li><strong>Use Guaranteed for critical services:</strong> Databases, payment systems, auth services</li>
+                    <li><strong>Profile your application:</strong> Use metrics to right-size requests/limits (don't guess!)</li>
+                    <li><strong>Set ResourceQuotas per namespace:</strong> Enforce organizational boundaries</li>
+                    <li><strong>Use LimitRanges for defaults:</strong> Developers don't have to remember</li>
+                    <li><strong>Monitor and adjust:</strong> Resource needs change over time</li>
+                </ul>
+            </div>
+
+            <div class="danger-box">
+                <h4>⚠️ Common Mistakes & How to Avoid Them</h4>
+                <ul>
+                    <li><strong>No requests set:</strong> Pods can be scheduled on full nodes → performance issues. <strong>Always set requests!</strong></li>
+                    <li><strong>Request = 0, Limit > 0:</strong> Creates BestEffort QoS, not Burstable. Set both or neither.</li>
+                    <li><strong>Too high limits:</strong> Node can become overcommitted. Keep limits reasonable.</li>
+                    <li><strong>Too low requests:</strong> Causes CPU throttling and poor performance. Profile your app!</li>
+                    <li><strong>Same values everywhere:</strong> Different services have different needs. Size appropriately.</li>
+                    <li><strong>Ignoring memory limits:</strong> Can cause cascading OOMKilled. Always limit memory!</li>
+                </ul>
+            </div>
+
+            <div class="real-world-example">
+                <h4>🌍 Real-World Troubleshooting Scenarios</h4>
+                <div class="scenario-title">Scenario 1: "My pods keep getting evicted!"</div>
+                <div class="scenario-description">
+                    <p><strong>Symptoms:</strong> Pods randomly restarting, <code>kubectl describe pod</code> shows "Evicted"</p>
+                    <p><strong>Cause:</strong> Node under memory pressure, your pods have BestEffort or low Burstable QoS</p>
+                    <p><strong>Solution:</strong></p>
+                    <ul>
+                        <li>Set proper memory requests that match actual usage</li>
+                        <li>Set memory limits to prevent memory leaks</li>
+                        <li>Upgrade to Guaranteed QoS if critical</li>
+                        <li>Add more nodes if cluster consistently under pressure</li>
+                    </ul>
+                </div>
+                
+                <div class="scenario-title" style="margin-top:2rem;">Scenario 2: "My API is slow despite low CPU usage!"</div>
+                <div class="scenario-description">
+                    <p><strong>Symptoms:</strong> Monitoring shows 20% CPU usage, but response times are terrible</p>
+                    <p><strong>Cause:</strong> CPU throttling! You set a limit, and the container is being throttled even though the node has capacity</p>
+                    <p><strong>Solution:</strong></p>
+                    <ul>
+                        <li>Check throttling: <code>kubectl exec pod -- cat /sys/fs/cgroup/cpu/cpu.stat</code></li>
+                        <li>Increase CPU limit or remove it entirely for latency-sensitive apps</li>
+                        <li>Keep requests to ensure proper scheduling</li>
+                    </ul>
+                </div>
+
+                <div class="scenario-title" style="margin-top:2rem;">Scenario 3: "Can't deploy - ResourceQuota exceeded!"</div>
+                <div class="scenario-description">
+                    <p><strong>Symptoms:</strong> Deployment fails with "exceeded quota" error</p>
+                    <p><strong>Cause:</strong> Namespace has hit its ResourceQuota limit</p>
+                    <p><strong>Solution:</strong></p>
+                    <ul>
+                        <li>Check current usage: <code>kubectl describe resourcequota -n &lt;namespace&gt;</code></li>
+                        <li>Delete unused resources or scale down non-critical services</li>
+                        <li>Request quota increase from cluster admin (with justification!)</li>
+                        <li>Optimize your resource requests - you might be asking for too much</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary -->
+        <section class="content-section summary-section">
+            <h2>📚 Quick Reference Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Commands & Args</h3>
+                    <ul>
+                        <li><code>command</code> overrides ENTRYPOINT</li>
+                        <li><code>args</code> overrides CMD</li>
+                        <li>Use for runtime customization</li>
+                        <li>Array form: <code>["cmd", "arg"]</code></li>
+                        <li>Same image, different behavior</li>
+                    </ul>
+                </div>
+                <div class="summary-card">
+                    <h3>ConfigMaps</h3>
+                    <ul>
+                        <li>Non-sensitive configuration only</li>
+                        <li>Env vars or volume mounts</li>
+                        <li>Decouple config from images</li>
+                        <li>1MB size limit</li>
+                        <li>Namespace scoped</li>
+                    </ul>
+                </div>
+                <div class="summary-card">
+                    <h3>Secrets</h3>
+                    <ul>
+                        <li>Sensitive data (base64, not encrypted!)</li>
+                        <li>Enable encryption at rest</li>
+                        <li>RBAC for access control</li>
+                        <li>Audit logging available</li>
+                        <li>Consider external managers for prod</li>
+                    </ul>
+                </div>
+                <div class="summary-card">
+                    <h3>Service Accounts</h3>
+                    <ul>
+                        <li>Identity for pods to access API</li>
+                        <li>Use bound tokens (time-limited)</li>
+                        <li>Auto-rotation supported</li>
+                        <li>Combine with RBAC</li>
+                        <li>Principle of least privilege</li>
+                    </ul>
+                </div>
+                <div class="summary-card">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li>Request = guaranteed minimum</li>
+                        <li>Limit = maximum allowed</li>
+                        <li>QoS: Guaranteed > Burstable > BestEffort</li>
+                        <li>Use ResourceQuota per namespace</li>
+                        <li>Use LimitRange for defaults</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top:2rem;">
+                <h4>🎯 Key Takeaways for Production</h4>
+                <ul>
+                    <li><strong>Security:</strong> Never store sensitive data in ConfigMaps. Use Secrets with encryption at rest enabled.</li>
+                    <li><strong>Identity:</strong> Create dedicated ServiceAccounts with minimal RBAC permissions. Use bound tokens.</li>
+                    <li><strong>Resources:</strong> Always set requests. Use Guaranteed QoS for critical services. Monitor and adjust.</li>
+                    <li><strong>Configuration:</strong> Externalize all config. Same image across all environments.</li>
+                    <li><strong>Best Practices:</strong> Principle of least privilege everywhere. Defense in depth. Monitor everything.</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>Kubernetes Day 3 Training Guide | Interactive Learning Experience | © 2025</p>
+        <p style="margin-top:0.5rem; font-size:0.9rem;">Built for comprehensive understanding with theory, examples, and hands-on practice</p>
+    </footer>
+
+    <script src="script-enhanced.js"></script>
+</body>
+</html>

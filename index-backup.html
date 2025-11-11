@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Day 3 Training - Interactive Guide</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1>☸️ Kubernetes Day 3 Training</h1>
+            <div class="nav-links">
+                <a href="#commands">Commands & Args</a>
+                <a href="#configmaps">ConfigMaps</a>
+                <a href="#secrets">Secrets</a>
+                <a href="#serviceaccount">Service Accounts</a>
+                <a href="#resources">Resources</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Introduction -->
+        <section class="intro-section">
+            <h2>Welcome to Kubernetes Day 3! 🚀</h2>
+            <p>This interactive guide will help you understand advanced Pod configuration, security, and resource management.</p>
+            <div class="topics-grid">
+                <div class="topic-card">
+                    <div class="topic-icon">📝</div>
+                    <h3>Commands & Arguments</h3>
+                    <p>Override container behavior</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">⚙️</div>
+                    <h3>ConfigMaps</h3>
+                    <p>Manage configuration data</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">🔐</div>
+                    <h3>Secrets</h3>
+                    <p>Handle sensitive information</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">👤</div>
+                    <h3>Service Accounts</h3>
+                    <p>Pod identity & authentication</p>
+                </div>
+                <div class="topic-card">
+                    <div class="topic-icon">📊</div>
+                    <h3>Resource Management</h3>
+                    <p>CPU & Memory control</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commands and Arguments -->
+        <section id="commands" class="content-section">
+            <h2>📝 Commands and Arguments in Pods</h2>
+            
+            <div class="concept-box">
+                <h3>Understanding Docker vs Kubernetes</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <h4>Docker</h4>
+                        <ul>
+                            <li><code>ENTRYPOINT</code> → Command to run</li>
+                            <li><code>CMD</code> → Default arguments</li>
+                        </ul>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="comparison-item">
+                        <h4>Kubernetes</h4>
+                        <ul>
+                            <li><code>command</code> → Overrides ENTRYPOINT</li>
+                            <li><code>args</code> → Overrides CMD</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Command & Args</h3>
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="showExample('default')">Default Container</button>
+                    <button class="demo-btn" onclick="showExample('command')">With Command</button>
+                    <button class="demo-btn" onclick="showExample('args')">With Args</button>
+                    <button class="demo-btn" onclick="showExample('both')">Command + Args</button>
+                </div>
+                <div id="command-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="command-yaml"></code></pre>
+                    </div>
+                    <div class="execution-flow">
+                        <h4>Execution Flow:</h4>
+                        <div id="execution-visual" class="flow-visual"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-cases">
+                <h3>When to Use Command and Arguments?</h3>
+                <div class="use-case-grid">
+                    <div class="use-case">
+                        <h4>✅ Use Command When:</h4>
+                        <ul>
+                            <li>You need to completely override the container's entry point</li>
+                            <li>Running a different binary than the default</li>
+                            <li>Example: Using a shell instead of the application</li>
+                        </ul>
+                    </div>
+                    <div class="use-case">
+                        <h4>✅ Use Args When:</h4>
+                        <ul>
+                            <li>You want to pass different parameters to the same command</li>
+                            <li>Customizing behavior without changing the executable</li>
+                            <li>Example: Different flags for development vs production</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ConfigMaps -->
+        <section id="configmaps" class="content-section">
+            <h2>⚙️ ConfigMaps</h2>
+            
+            <div class="concept-box">
+                <h3>What is a ConfigMap?</h3>
+                <p>ConfigMaps allow you to decouple configuration from container images, making applications more portable.</p>
+                <div class="config-visual">
+                    <div class="visual-flow">
+                        <div class="flow-item">
+                            <div class="icon">📄</div>
+                            <p>Configuration Data</p>
+                        </div>
+                        <div class="arrow-right">→</div>
+                        <div class="flow-item">
+                            <div class="icon">⚙️</div>
+                            <p>ConfigMap</p>
+                        </div>
+                        <div class="arrow-right">→</div>
+                        <div class="flow-item">
+                            <div class="icon">📦</div>
+                            <p>Pod</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Create and Use ConfigMap</h3>
+                <div class="demo-tabs">
+                    <button class="tab-btn active" onclick="showConfigMapTab('literal')">From Literal</button>
+                    <button class="tab-btn" onclick="showConfigMapTab('file')">From File</button>
+                    <button class="tab-btn" onclick="showConfigMapTab('env')">As Environment</button>
+                    <button class="tab-btn" onclick="showConfigMapTab('volume')">As Volume</button>
+                </div>
+                <div id="configmap-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="configmap-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hands-on">
+                <h3>🔬 Try It Yourself</h3>
+                <div class="exercise-box">
+                    <h4>Exercise: Create a ConfigMap for Application Settings</h4>
+                    <ol>
+                        <li>Create a ConfigMap with database connection settings</li>
+                        <li>Mount it as environment variables in a Pod</li>
+                        <li>Verify the values inside the container</li>
+                    </ol>
+                    <button class="show-solution-btn" onclick="toggleSolution('cm-solution')">Show Solution</button>
+                    <div id="cm-solution" class="solution" style="display:none;">
+                        <pre><code>kubectl create configmap app-config \
+  --from-literal=DB_HOST=mysql.default.svc.cluster.local \
+  --from-literal=DB_PORT=3306 \
+  --from-literal=DB_NAME=myapp</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Secrets -->
+        <section id="secrets" class="content-section">
+            <h2>🔐 Kubernetes Secrets</h2>
+            
+            <div class="concept-box">
+                <h3>What is a Secret?</h3>
+                <p>Secrets are similar to ConfigMaps but are specifically intended for confidential data.</p>
+                <div class="comparison-grid">
+                    <div class="comparison-item configmap-item">
+                        <h4>ConfigMap</h4>
+                        <ul>
+                            <li>Non-confidential data</li>
+                            <li>Plain text storage</li>
+                            <li>Example: App settings, URLs</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-item secret-item">
+                        <h4>Secret</h4>
+                        <ul>
+                            <li>Confidential data</li>
+                            <li>Base64 encoded (NOT encrypted!)</li>
+                            <li>Example: Passwords, API keys</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Base64 Encoding/Decoding</h3>
+                <div class="encoder-tool">
+                    <div class="encoder-input">
+                        <label>Plain Text:</label>
+                        <input type="text" id="plain-text" placeholder="Enter your secret" oninput="encodeSecret()">
+                    </div>
+                    <div class="encoder-arrow">↓</div>
+                    <div class="encoder-output">
+                        <label>Base64 Encoded:</label>
+                        <input type="text" id="encoded-text" readonly>
+                    </div>
+                    <div class="encoder-arrow">↓</div>
+                    <div class="encoder-output">
+                        <label>Decoded Back:</label>
+                        <input type="text" id="decoded-text" readonly>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    ⚠️ <strong>Important:</strong> Base64 is NOT encryption! Anyone can decode it. Secrets provide access control, not encryption at rest (unless enabled).
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Secret Types</h3>
+                <div class="demo-tabs">
+                    <button class="tab-btn active" onclick="showSecretType('opaque')">Opaque</button>
+                    <button class="tab-btn" onclick="showSecretType('docker')">Docker Registry</button>
+                    <button class="tab-btn" onclick="showSecretType('tls')">TLS</button>
+                    <button class="tab-btn" onclick="showSecretType('token')">Service Account</button>
+                </div>
+                <div id="secret-type-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="secret-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="use-cases">
+                <h3>Advantages and Limitations of Kubernetes Secrets</h3>
+                <div class="use-case-grid">
+                    <div class="use-case advantage">
+                        <h4>✅ Advantages:</h4>
+                        <ul>
+                            <li>Access control via RBAC</li>
+                            <li>Can be mounted without container rebuild</li>
+                            <li>Audit logging of secret access</li>
+                            <li>Can enable encryption at rest</li>
+                            <li>Integration with external secret managers</li>
+                        </ul>
+                    </div>
+                    <div class="use-case limitation">
+                        <h4>⚠️ Limitations:</h4>
+                        <ul>
+                            <li>Only base64 encoded by default (not encrypted)</li>
+                            <li>Stored in etcd (need to enable encryption)</li>
+                            <li>Size limit: 1MB</li>
+                            <li>Visible to anyone with cluster access</li>
+                            <li>Consider external solutions for sensitive production data</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Service Account -->
+        <section id="serviceaccount" class="content-section">
+            <h2>👤 Service Accounts and Tokens</h2>
+            
+            <div class="concept-box">
+                <h3>What is a Service Account?</h3>
+                <p>Service Accounts provide an identity for processes running in Pods to interact with the Kubernetes API.</p>
+                <div class="sa-visual">
+                    <div class="visual-flow">
+                        <div class="flow-item">
+                            <div class="icon">👤</div>
+                            <p>Service Account</p>
+                        </div>
+                        <div class="arrow-right">→</div>
+                        <div class="flow-item">
+                            <div class="icon">🎫</div>
+                            <p>Token</p>
+                        </div>
+                        <div class="arrow-right">→</div>
+                        <div class="flow-item">
+                            <div class="icon">📦</div>
+                            <p>Pod</p>
+                        </div>
+                        <div class="arrow-right">→</div>
+                        <div class="flow-item">
+                            <div class="icon">⚙️</div>
+                            <p>API Server</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Legacy vs Bound Tokens</h3>
+                <div class="token-comparison">
+                    <div class="token-type legacy-token">
+                        <h4>Legacy Tokens (Pre-1.21)</h4>
+                        <div class="token-properties">
+                            <div class="property">🔴 No expiration</div>
+                            <div class="property">🔴 Stored as Secret</div>
+                            <div class="property">🔴 Not audience bound</div>
+                            <div class="property">🔴 Security risk if leaked</div>
+                        </div>
+                    </div>
+                    <div class="token-type bound-token">
+                        <h4>Bound Tokens (1.21+)</h4>
+                        <div class="token-properties">
+                            <div class="property">✅ Time-limited (default 1h)</div>
+                            <div class="property">✅ Audience bound</div>
+                            <div class="property">✅ Pod bound</div>
+                            <div class="property">✅ Auto-rotated</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Service Account Token</h3>
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="showSAExample('create')">Create SA</button>
+                    <button class="demo-btn" onclick="showSAExample('pod')">Use in Pod</button>
+                    <button class="demo-btn" onclick="showSAExample('token')">Projected Token</button>
+                    <button class="demo-btn" onclick="showSAExample('rbac')">With RBAC</button>
+                </div>
+                <div id="sa-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="sa-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="animation-box">
+                <h3>Token Lifecycle Animation</h3>
+                <div id="token-lifecycle" class="lifecycle-animation">
+                    <button class="animate-btn" onclick="animateTokenLifecycle()">▶️ Play Animation</button>
+                    <div class="timeline">
+                        <div class="timeline-item" id="tl-1">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">Pod Created</div>
+                        </div>
+                        <div class="timeline-item" id="tl-2">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">Token Projected</div>
+                        </div>
+                        <div class="timeline-item" id="tl-3">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">Token Used (Valid)</div>
+                        </div>
+                        <div class="timeline-item" id="tl-4">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">Auto-Rotation</div>
+                        </div>
+                        <div class="timeline-item" id="tl-5">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">Pod Deleted → Token Invalid</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources -->
+        <section id="resources" class="content-section">
+            <h2>📊 Resource Management</h2>
+            
+            <div class="concept-box">
+                <h3>Understanding Resource Requests and Limits</h3>
+                <div class="resource-visual">
+                    <div class="resource-bar-container">
+                        <h4>CPU & Memory Allocation</h4>
+                        <div class="resource-bar">
+                            <div class="bar-section request" style="width: 30%;">
+                                <span>Request<br>Guaranteed</span>
+                            </div>
+                            <div class="bar-section burstable" style="width: 30%;">
+                                <span>Burstable<br>Zone</span>
+                            </div>
+                            <div class="bar-section limit" style="width: 10%;">
+                                <span>Limit</span>
+                            </div>
+                            <div class="bar-section unavailable" style="width: 30%;">
+                                <span>Throttled/OOMKilled</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Interactive Demo: Resource Requests & Limits</h3>
+                <div class="resource-calculator">
+                    <div class="calculator-inputs">
+                        <div class="input-group">
+                            <label>CPU Request (millicores):</label>
+                            <input type="range" id="cpu-request" min="0" max="4000" value="500" oninput="updateResourceVisual()">
+                            <span id="cpu-request-val">500m</span>
+                        </div>
+                        <div class="input-group">
+                            <label>CPU Limit (millicores):</label>
+                            <input type="range" id="cpu-limit" min="0" max="4000" value="1000" oninput="updateResourceVisual()">
+                            <span id="cpu-limit-val">1000m</span>
+                        </div>
+                        <div class="input-group">
+                            <label>Memory Request (Mi):</label>
+                            <input type="range" id="mem-request" min="0" max="2048" value="256" oninput="updateResourceVisual()">
+                            <span id="mem-request-val">256Mi</span>
+                        </div>
+                        <div class="input-group">
+                            <label>Memory Limit (Mi):</label>
+                            <input type="range" id="mem-limit" min="0" max="2048" value="512" oninput="updateResourceVisual()">
+                            <span id="mem-limit-val">512Mi</span>
+                        </div>
+                    </div>
+                    <div class="qos-indicator">
+                        <h4>QoS Class: <span id="qos-class">Burstable</span></h4>
+                        <p id="qos-explanation"></p>
+                    </div>
+                    <div class="yaml-display">
+                        <pre><code id="resource-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="concept-box">
+                <h3>QoS Classes</h3>
+                <div class="qos-grid">
+                    <div class="qos-item guaranteed">
+                        <h4>Guaranteed</h4>
+                        <p>Request = Limit for all resources</p>
+                        <ul>
+                            <li>Highest priority</li>
+                            <li>Last to be evicted</li>
+                            <li>Predictable performance</li>
+                        </ul>
+                    </div>
+                    <div class="qos-item burstable">
+                        <h4>Burstable</h4>
+                        <p>Request < Limit</p>
+                        <ul>
+                            <li>Medium priority</li>
+                            <li>Can burst above request</li>
+                            <li>May be throttled/evicted</li>
+                        </ul>
+                    </div>
+                    <div class="qos-item besteffort">
+                        <h4>BestEffort</h4>
+                        <p>No request or limit set</p>
+                        <ul>
+                            <li>Lowest priority</li>
+                            <li>First to be evicted</li>
+                            <li>Use leftover resources</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Resource Quotas and Limit Ranges</h3>
+                <div class="demo-tabs">
+                    <button class="tab-btn active" onclick="showResourceTab('quota')">Resource Quota</button>
+                    <button class="tab-btn" onclick="showResourceTab('limitrange')">Limit Range</button>
+                    <button class="tab-btn" onclick="showResourceTab('comparison')">When to Use</button>
+                </div>
+                <div id="resource-tab-demo" class="demo-output">
+                    <div class="yaml-display">
+                        <pre><code id="resource-tab-yaml"></code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hands-on">
+                <h3>🔬 Resource Management Scenarios</h3>
+                <div class="scenario-grid">
+                    <div class="scenario">
+                        <h4>Scenario 1: Production API</h4>
+                        <p>High availability, predictable performance</p>
+                        <div class="recommendation">
+                            ✅ Use: <strong>Guaranteed QoS</strong><br>
+                            Set request = limit for critical services
+                        </div>
+                    </div>
+                    <div class="scenario">
+                        <h4>Scenario 2: Batch Jobs</h4>
+                        <p>Can handle occasional throttling</p>
+                        <div class="recommendation">
+                            ✅ Use: <strong>Burstable QoS</strong><br>
+                            Set lower requests, higher limits
+                        </div>
+                    </div>
+                    <div class="scenario">
+                        <h4>Scenario 3: Dev Environment</h4>
+                        <p>Non-critical, flexible resources</p>
+                        <div class="recommendation">
+                            ✅ Use: <strong>BestEffort or low Burstable</strong><br>
+                            Minimize resource guarantees
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary -->
+        <section class="content-section summary-section">
+            <h2>📚 Quick Reference Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h3>Commands & Args</h3>
+                    <ul>
+                        <li><code>command</code> = ENTRYPOINT override</li>
+                        <li><code>args</code> = CMD override</li>
+                        <li>Use for runtime customization</li>
+                    </ul>
+                </div>
+                <div class="summary-card">
+                    <h3>ConfigMaps</h3>
+                    <ul>
+                        <li>Non-sensitive configuration</li>
+                        <li>As env vars or volumes</li>
+                        <li>Decouple config from image</li>
+                    </ul>
+                </div>
+                <div class="summary-card">
+                    <h3>Secrets</h3>
+                    <ul>
+                        <li>Sensitive data (base64)</li>
+                        <li>Enable encryption at rest</li>
+                        <li>RBAC for access control</li>
+                    </ul>
+                </div>
+                <div class="summary-card">
+                    <h3>Service Accounts</h3>
+                    <ul>
+                        <li>Pod identity for API access</li>
+                        <li>Bound tokens (time-limited)</li>
+                        <li>Auto-rotation support</li>
+                    </ul>
+                </div>
+                <div class="summary-card">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li>Request = guaranteed resources</li>
+                        <li>Limit = max resources</li>
+                        <li>QoS: Guaranteed > Burstable > BestEffort</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>Kubernetes Day 3 Training Guide | Interactive Learning Experience</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
