@@ -273,7 +273,7 @@ spec:
                     <p><strong>The Problem:</strong> Hardcoding configuration in container images makes them inflexible. If you need to change a database URL, you'd have to rebuild and redeploy the entire image!</p>
                 </div>
                 <div class="theory-point">
-                    <p><strong>The Solution:</strong> ConfigMaps separate configuration data from application code, following the <strong>12-Factor App methodology</strong>.</p>
+                    <p><strong>The Solution:</strong> ConfigMaps separate configuration data from application code.</p>
                     <p><strong>Benefits:</strong></p>
                     <ul>
                         <li>Same image works across all environments (dev/staging/prod)</li>
@@ -527,18 +527,6 @@ spec:
                         <pre><code id="secret-yaml"></code></pre>
                     </div>
                 </div>
-            </div>
-
-            <div class="info-box">
-                <h4>💡 Advantages of Kubernetes Secrets</h4>
-                <ul>
-                    <li><strong>RBAC Integration:</strong> Fine-grained access control - only authorized pods/users can read</li>
-                    <li><strong>Audit Trail:</strong> All secret access can be logged and monitored</li>
-                    <li><strong>Dynamic Updates:</strong> Rotate secrets without rebuilding images</li>
-                    <li><strong>Namespace Isolation:</strong> Secrets don't leak across namespace boundaries</li>
-                    <li><strong>Kubernetes-Native:</strong> Works seamlessly with other K8s features (ServiceAccounts, Ingress)</li>
-                    <li><strong>Optional Encryption:</strong> Can enable encryption at rest with KMS providers</li>
-                </ul>
             </div>
 
             <div class="danger-box">
